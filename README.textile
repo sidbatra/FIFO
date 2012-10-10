@@ -11,9 +11,8 @@ Pending
 
 h2. Usage
 
-h3. Pending
-
 <pre>
+Pending
 </pre>
 
 
