@@ -52,6 +52,12 @@ module FIFO
       @attempts += 1
     end
 
+    # Public. Add the payload back onto the queue.
+    #
+    def retry
+      queue.push self
+    end
+
     # Public. Override to_s for a loggable output.
     #
     # Returns the String form of the Payload.
