@@ -1,8 +1,6 @@
 h1. FIFO
 
-FIFO is queueing library built on top of Amazon Simple Queue Service. Like
-DelayedJob it encapsulates the common pattern of executing time consuming tasks 
-in the background but unlike DelayedJob it can be used without a database.
+FIFO is queueing library built on top of Amazon Simple Queue Service. Like DelayedJob it encapsulates the common pattern of executing time consuming tasks in the background but unlike DelayedJob it can be used without a database.
 
 h3. Features
 
@@ -28,12 +26,9 @@ Setup Amazon access id and secret.
 FIFO::QueueManager.setup AWS_ACCESS_ID, AWS_SECRET_KEY
 </pre>
 
-Create a queue object. The connection to SQS is lazily opened thus
-preventing any delay at the start of your application.
+Create a queue object. The connection to SQS is lazily opened thus preventing any delay at the start of your application.
 
-For Rails, this can be added to a file in <pre>config/initializers/</pre>.
-Additionally, queue names can include the current Rails environment name
-for modularity.
+For Rails, this can be added to a file in "config/initializers/".  Additionally, queue names can include the current Rails environment name for modularity.
 
 <pre>
 queue = FIFO::Queue.new QUEUE_NAME
