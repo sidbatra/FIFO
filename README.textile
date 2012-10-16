@@ -1,6 +1,17 @@
 h1. FIFO
 
-Queueing library built on top of AWS SQS
+FIFO is queueing library built on top of Amazon Simple Queue Service. Like
+DelayedJob it encapsulates the common pattern of executing time consuming tasks 
+in the background but unlike DelayedJob it can be used without a database.
+
+h3. Features
+
+* Built on Amazon's reliable and scalable queue service.
+* Communicate between different disjoint parts of a complex application.
+* Use multiple queues without any initial connection overhead.
+* Doesn't poll the database.
+* ActiveRecord objects maintain state through the queue.
+* Retry mechanism.
 
 h2. Installation
 
@@ -11,23 +22,24 @@ Pending
 
 h2. Usage
 
+Setup Amazon access id and secret.
+
 <pre>
-Pending
+<code>
+FIFO::QueueManager.setup AWS_ACCESS_ID, AWS_SECRET_KEY
+</code>
 </pre>
 
+Create a queue object. The connection to SQS is lazily opened thus
+preventing any delay at the start of your application.
 
-h2. Contributing to FIFO
- 
-* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
-* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
-* Fork the project.
-* Start a feature/bugfix branch.
-* Commit and push until you are happy with your contribution.
-* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
-* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+For Rails, this can be added to a file in <pre>config/initializers/</pre>.
+Additionally, queue names can include the current Rails environment name
+for modularity.
 
-h2. Copyright
-
-Copyright (c) 2012 Denwen, Inc. See LICENSE.txt for
-further details.
+<pre>
+<code>
+queue = FIFO::Queue.new QUEUE_NAME
+</code>
+</pre>
 
