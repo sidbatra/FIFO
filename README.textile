@@ -100,7 +100,7 @@ Basic flow of processing an item from the queue:
 <pre>
 queue.push "Hello World",:length
 payload = queue.pop
-paylod.process
+payload.process
 => 11
 </pre>
 
@@ -111,7 +111,7 @@ queue.push "Hello World",:length
 
 begin
   payload = queue.pop
-  paylod.process
+  payload.process
 rescue => ex
   payload.retry if payload.attempts < 3
 end
