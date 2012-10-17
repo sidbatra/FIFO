@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "fifo"
   gem.homepage = "http://github.com/denwen/fifo"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Queueing library in Ruby built on top of Amazon SQS (Simple Queue Service).}
+  gem.description = %Q{Queueing library in Ruby built on top of Amazon SQS(Simple Queue Service) for processing background tasks and enabling communication between parts of a complex application.}
   gem.email = "siddharthabatra@gmail.com"
   gem.authors = ["Siddharth Batra"]
   # dependencies defined in Gemfile
