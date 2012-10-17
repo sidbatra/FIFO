@@ -34,7 +34,7 @@ module FIFO
       if is_object_yaml?
         object = YAML.load(@object)
 
-        if object.is_a? ActiveRecord::Base
+        if defined?(ActiveRecord) && object.is_a?(ActiveRecord::Base)
           object = object.class.find object.id 
         end
       else
