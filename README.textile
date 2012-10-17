@@ -1,16 +1,22 @@
 h1. FIFO
 
-FIFO is queueing library built on top of Amazon Simple Queue Service. Like DelayedJob it encapsulates the common pattern of executing time consuming tasks in the background but unlike DelayedJob it can be used without a database.
+FIFO is ruby queueing library built on top of Amazon Simple Queue Service. Like DelayedJob it encapsulates the common pattern of executing time consuming tasks in the background but unlike DelayedJob it doesn't rely on a database.
 
 h3. Features
-
 * Built on Amazon's reliable and scalable queue service.
-* Communicate between different disjoint parts of a complex application.
-* Use multiple queues with ease.
 * Connection to SQS are opened lazily negating any initial load time.
+* Use multiple queues with ease.
 * Doesn't poll the database.
-* ActiveRecord objects maintain state through the queue.
-* Retry mechanism.
+* Rails ActiveRecord objects maintain state through the queue.
+* Built-in retry mechanism.
+
+h3. Uses
+* Sending emails
+* Processing images
+* Indexing 
+* Sharing to social networks
+* Cache management
+* Communicate between disjoint parts of a complex application (Cron, web, processing servers)
 
 h2. Installation
 
@@ -27,34 +33,38 @@ h3. Credentials
 Setup Amazon access id and secret.
 
 <pre>
-FIFO::QueueManager.setup AWS_ACCESS_ID, AWS_SECRET_KEY
+FIFO::QueueManager.setup <aws_access_id>, <aws_secret_key>
 </pre>
 
 
 h3. Initialization
 
-Create a queue object. The connection to SQS is lazily opened thus preventing any delay at the start of your application.
+Create a queue object. If an queue by this name doesn't exist on the Amazon SQS account this will create one.
 
 For Rails, this can be added to a file in "config/initializers/".  Additionally, queue names can include the current Rails environment name for modularity.
 
 There is an additional parameter for message visibility. For more details see: http://docs.amazonwebservices.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/Welcome.html
 
 <pre>
-queue = FIFO::Queue.new QUEUE_NAME
+queue = FIFO::Queue.new <queue_name>
 </pre>
 
+To prevent delays at the start of the application SQS connections are opened lazily. This saves the overheard when initialzing multiple queues:
+
+<pre>
+queues = []
+(1..10).each do |i|
+  queues << FIFO::Queue.new <queue_name_i>
+end
+</pre>
 
 h3. Insertion
 
-The most basic case takes a Ruby object, a method to be called and a list of method parameters. For example to run the following command in the background:
+The most basic case takes a Ruby object, a method to be called and a list of method parameters. Example of a ruby command and how to run it in the background:
 
 <pre>
 "World".insert 0,"Hello "
-</pre>
 
-Push it into the queue:
-
-<pre>
 queue.push "World",:insert,0,"Hello "
 </pre>
 
@@ -63,11 +73,7 @@ FIFO is designed to work with ActiveRecord objects. Freshness of ActiveRecord ob
 
 <pre>
 user.process_profile_image {:max_width => 200,:max_height => 150}
-</pre>
 
-Push it into the queue:
-
-<pre>
 queue.push user,:process_profile_image,{:max_width => 200,:max_height => 150}
 </pre>
 
@@ -76,20 +82,150 @@ FIFO also works with ActiveRecord class methods. For example, sending newsletter
 
 <pre>
 UserMailer.deliver_newsletter emails
-</pre>
 
-via the queue:
-
-<pre>
 queue.push UserMailer,:deliver_newsletter,emails
 </pre>
 
 
 h3. Processing
 
+Every item pushed into the queue is converted into a FIFO::Payload object which executes the passed method.
+
+Basic flow of processing an item from the queue:
+
+<pre>
+queue.push "Hello World",:length
+payload = queue.pop
+paylod.process
+=> 11
+</pre>
+
+Retry functionality takes a failed payload and adds it back into the queue. Payload objects maintain total number of processing attempts.
+
+<pre>
+queue.push "Hello World",:length
+
+begin
+  payload = queue.pop
+  paylod.process
+rescue => ex
+  payload.retry if payload.attempts < 3
+end
+</pre>
 
 
-h4. Credit
+Process all items in the queue:
+
+<pre>
+while(true)
+  payload = queue.pop
+  break unless payload
+  
+  begin
+    payload.process
+  rescue => ex
+    payload.retry if payload.attempts < 3
+  end
+end
+</pre>
+
+Multiple queues can be used to simulate priority:
+
+<pre>
+while(true)
+  payload = queue.pop
+  payload = queue1.pop unless payload
+  payload = queue2.pop unless payload
+  
+  begin
+    payload.process
+  rescue => ex
+    payload.retry if payload.attempts < 3
+  end
+
+  sleep 10
+end
+</pre>
 
 
+The Payload flow can be entirely skipped by popping the raw response from the queue:
+
+<pre>
+queue.pop :raw => true
+</pre>
+
+
+h4. Daemon
+
+h5. Installation
+
+<pre>
+sudo gem install daemons
+Install daemon_generator from: https://github.com/dougal/daemon_generator
+
+./script/generate daemon <name>
+</pre>
+
+h5. Source
+
+<pre>
+
+require File.dirname(__FILE__) + "/../../config/environment"
+
+$running = true
+Signal.trap("TERM") do 
+  $running = false
+end
+
+FIFO::QueueManager.setup <aws_access_id>, <aws_secret_key>
+
+queue = FIFO::Queue.new <queue_name> 
+logger = Logger.new(File.join(RAILS_ROOT,"log/<name>.rb.log"))
+
+
+while($running) do
+  payload = queue.pop
+
+  if payload
+
+    begin
+      start_time = Time.now
+      payload.process
+      end_time = Time.now
+
+      logger.info "Finished #{payload.to_s} #{end_time - start_time}"
+
+    rescue => ex
+      if payload.attempts < 3
+        logger.info "Recovering #{payload.to_s}"
+        payload.retry
+      else
+        #Log Exception
+      end
+    end
+
+  end 
+  
+  sleep 5
+end
+</pre>
+
+To control the state of the daemon:
+
+<pre>
+lib/daemon/<name>_ctl <start|stop|run>
+</pre>
+
+h2. SQS
+
+Things to know about Amazon's SQS:
+
+* The order of items isn't always maintained. It's not 100% fifo but close enough.
+* There are multiple connection modes to SQS: per_request, per_thread, single
+* http://docs.amazonwebservices.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/Welcome.html
+
+
+h2. Credit
+
+FIFO is built by the wonderful people who make Mine: http://getmine.com
 
