@@ -4,8 +4,8 @@ FIFO is a ruby queueing library built on top of Amazon SQS (Simple Queue Service
 
 h3. Features
 * Built on Amazon's reliable and scalable queue service.
-* Connection to SQS are opened lazily negating any initial load time.
-* Use multiple queues with ease.
+* Connections to SQS are opened lazily negating any initial load time.
+* Multiple queues can be used simultaneously.
 * Doesn't poll the database.
 * Rails ActiveRecord objects maintain state through the queue.
 * Built-in retry mechanism.
@@ -20,12 +20,12 @@ FIFO is extracted from the Mine (http://getmine.com) codebase. Here are some of 
 * Sharing to social networks
 * Cache management
 * Launching cron jobs
-* Communicate between disjoint parts of a complex application (cron, web, processing servers)
+* Communication between disjoint parts of a complex application (cron, web, processing servers)
 
 h2. Installation
 
 <pre>
-Pending
+sudo gem install fifo
 </pre>
 
 
@@ -34,16 +34,17 @@ h2. Usage
 
 h3. Credentials
 
-Setup an aws access id and aws secret key. They can be found here: https://portal.aws.amazon.com/gp/aws/securityCredentials
+Setup the aws access id and aws secret key. They can be found here: https://portal.aws.amazon.com/gp/aws/securityCredentials
 
 <pre>
+require 'fifo'
 FIFO::QueueManager.setup <aws_access_id>, <aws_secret_key>
 </pre>
 
 
 h3. Initialization
 
-Create a queue object. If an queue by this name doesn't exist on the Amazon SQS account this will create one.
+Create a queue object. If a queue by this name doesn't exist on the Amazon SQS account this will create one.
 
 For Rails, this can be added to a file in "config/initializers/".  Additionally, queue names can include the current Rails environment name for modularity.
 
@@ -53,7 +54,7 @@ There is an additional parameter for message visibility. For more details see: h
 queue = FIFO::Queue.new <queue_name>
 </pre>
 
-To prevent delays at the start of the application SQS connections are opened lazily. This saves the overheard when initialzing multiple queues:
+To prevent delays at the start of the application SQS connections are opened lazily. This saves time when initialzing multiple queues:
 
 <pre>
 queues = []
