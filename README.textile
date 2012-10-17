@@ -6,7 +6,8 @@ h3. Features
 
 * Built on Amazon's reliable and scalable queue service.
 * Communicate between different disjoint parts of a complex application.
-* Use multiple queues without any initial connection overhead.
+* Use multiple queues with ease.
+* Connection to SQS are opened lazily negating any initial load time.
 * Doesn't poll the database.
 * ActiveRecord objects maintain state through the queue.
 * Retry mechanism.
@@ -20,17 +21,75 @@ Pending
 
 h2. Usage
 
+
+h3. Credentials
+
 Setup Amazon access id and secret.
 
 <pre>
 FIFO::QueueManager.setup AWS_ACCESS_ID, AWS_SECRET_KEY
 </pre>
 
+
+h3. Initialization
+
 Create a queue object. The connection to SQS is lazily opened thus preventing any delay at the start of your application.
 
 For Rails, this can be added to a file in "config/initializers/".  Additionally, queue names can include the current Rails environment name for modularity.
 
+There is an additional parameter for message visibility. For more details see: http://docs.amazonwebservices.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/Welcome.html
+
 <pre>
 queue = FIFO::Queue.new QUEUE_NAME
 </pre>
+
+
+h3. Insertion
+
+The most basic case takes a Ruby object, a method to be called and a list of method parameters. For example to run the following command in the background:
+
+<pre>
+"World".insert 0,"Hello "
+</pre>
+
+Push it into the queue:
+
+<pre>
+queue.push "World",:insert,0,"Hello "
+</pre>
+
+
+FIFO is designed to work with ActiveRecord objects. Freshness of ActiveRecord objects is ensured by reloading them from the database when they're popped from the queue. Consider an instance method to process images:
+
+<pre>
+user.process_profile_image {:max_width => 200,:max_height => 150}
+</pre>
+
+Push it into the queue:
+
+<pre>
+queue.push user,:process_profile_image,{:max_width => 200,:max_height => 150}
+</pre>
+
+
+FIFO also works with ActiveRecord class methods. For example, sending newsletters:
+
+<pre>
+UserMailer.deliver_newsletter emails
+</pre>
+
+via the queue:
+
+<pre>
+queue.push UserMailer,:deliver_newsletter,emails
+</pre>
+
+
+h3. Processing
+
+
+
+h4. Credit
+
+
 
