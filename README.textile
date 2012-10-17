@@ -1,6 +1,6 @@
 h1. FIFO
 
-FIFO is ruby queueing library built on top of Amazon Simple Queue Service. Like DelayedJob it encapsulates the common pattern of executing time consuming tasks in the background but unlike DelayedJob it doesn't rely on a database.
+FIFO is a ruby queueing library built on top of Amazon SQS (Simple Queue Service). Like DelayedJob it encapsulates the common pattern of executing time consuming tasks in the background but unlike DelayedJob it doesn't rely on a database.
 
 h3. Features
 * Built on Amazon's reliable and scalable queue service.
@@ -11,12 +11,16 @@ h3. Features
 * Built-in retry mechanism.
 
 h3. Uses
+
+FIFO is extracted from the Mine (http://getmine.com) codebase. Here are some of the things we use it for:
+
 * Sending emails
 * Processing images
 * Indexing 
 * Sharing to social networks
 * Cache management
-* Communicate between disjoint parts of a complex application (Cron, web, processing servers)
+* Launching cron jobs
+* Communicate between disjoint parts of a complex application (cron, web, processing servers)
 
 h2. Installation
 
@@ -30,7 +34,7 @@ h2. Usage
 
 h3. Credentials
 
-Setup Amazon access id and secret.
+Setup an aws access id and aws secret key. They can be found here: https://portal.aws.amazon.com/gp/aws/securityCredentials
 
 <pre>
 FIFO::QueueManager.setup <aws_access_id>, <aws_secret_key>
@@ -169,7 +173,6 @@ Install daemon_generator from: https://github.com/dougal/daemon_generator
 h5. Source
 
 <pre>
-
 require File.dirname(__FILE__) + "/../../config/environment"
 
 $running = true
