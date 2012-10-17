@@ -16,7 +16,7 @@ module FIFO
     def initialize(object,method,*args)
       raise ArgumentError, "object and method required" unless object && method
 
-      @attempts = 0
+      @attempts = 1
       @object = object.is_a?(Class) ? 
                   object.to_s.split("::").last :
                   object.to_yaml 
@@ -55,6 +55,7 @@ module FIFO
     # Public. Add the payload back onto the queue.
     #
     def retry
+      failed
       queue.push self
     end
 

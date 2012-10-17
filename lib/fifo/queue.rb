@@ -16,14 +16,15 @@ module FIFO
     # Public. Pop the first entry in the queue and create a payload
     # object from it.
     #
-    # raw - The Boolean flag toggling between Payload or raw response.
+    # options - The Hash of options.
+    #   :raw - Return raw queue value instead of a payload.
     #
     # Returns the Payload object if found or nil.
-    def pop(raw=false)
+    def pop(options={})
       message = queue.pop
 
       if message
-        if raw
+        if options[:raw]
           payload = message.body
         else
           payload = YAML.load(message.body) 
