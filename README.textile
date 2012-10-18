@@ -46,7 +46,7 @@ h3. Initialization
 
 Create a queue object. If a queue by this name doesn't exist on the Amazon SQS account this will create one.
 
-For Rails, this can be added to a file in "config/initializers/".  Additionally, suffixes can be added to queue names for modularity. For example, adding "_staging" to queue names can segerate queues for the staging enviroment or adding machine IPs to queue names can create local queues.
+For Rails, this can be added to a file in "config/initializers/".  Additionally, suffixes can be added to queue names for modularity. For example, adding "_staging" to queue names can segregate queues for the staging enviroment or adding machine IPs to queue names can create local queues.
 
 There is an additional parameter for message visibility. For more details see: http://docs.amazonwebservices.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/Welcome.html
 
