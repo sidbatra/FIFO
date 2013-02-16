@@ -10,6 +10,7 @@ h3. Features
 * Rails ActiveRecord objects maintain state through the queue.
 * Built-in retry mechanism.
 
+
 h3. Uses
 
 FIFO is extracted from the Mine (http://getmine.com) codebase. Here are some of the things we use it for:
